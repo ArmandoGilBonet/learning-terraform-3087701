@@ -35,7 +35,7 @@ module "blog_vpc" {
 
 module "autoscaling" {
   source  = "terraform-aws-modules/autoscaling/aws"
-  version = "7.4.1"
+  version = "6.5.2"
   
   name     = "blog"
   min_size = 1
@@ -46,7 +46,7 @@ module "autoscaling" {
   security_groups      = [module.blog_sg.security_group_id]
   
   image_id      = data.aws_ami.app_ami.id
-  instance_type = "t3.nano"
+  instance_type = var.instance_type
 
 }
 
@@ -54,7 +54,7 @@ module "blog_alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "~> 8.0"
 
-  name = "blog-alb"
+  name = "blog-alb-new"
 
   load_balancer_type = "application"
 
