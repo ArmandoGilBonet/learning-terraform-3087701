@@ -43,47 +43,44 @@ module "autoscaling" {
 
   vpc_zone_identifier = module.blog_vpc.public_subnets
   target_group_arns   = module.blog_alb.target_group_arns
-  security_groups      = [module.blog_sg.security_group_id]
+  security_groups      = [module.blog_sg.security_groups]
   
   image_id      = data.aws_ami.app_ami.id
   instance_type = "t3.nano"
 
 }
 
-
 module "blog_alb" {
   source  = "terraform-aws-modules/alb/aws"
-  version = "8.7.0"
+  version = "~> 8.0"
 
-  name    = "blog-alb"
+  name = "blog-alb"
 
-  vpc_id  = module.blog_vpc.vpc_id
-  subnets = module.blog_vpc.public_subnets
-  security_groups = [module.blog_sg.security_group_id]
+  load_balancer_type = "application"
 
-  listeners = {
-    http = {
-      port            = 80
-      protocol        = "HTTP"
+  vpc_id             = module.blog_vpc.vpc_id
+  subnets            = module.blog_vpc.public_subnets
+  security_groups    = [module.blog_sg.security_group_id]
 
-      forward = {
-        target_group_key = "blog"
-      }
-    }
-  }
-
-  target_groups = {
-    blog = {
+  target_groups = [
+    {
       name_prefix      = "blog-"
-      protocol         = "HTTP"
-      port             = 80
+      backend_protocol = "HTTP"
+      backend_port     = 80
       target_type      = "instance"
     }
-  }
+  ]
+
+  http_tcp_listeners = [
+    {
+      port               = 80
+      protocol           = "HTTP"
+      target_group_index = 0
+    }
+  ]
 
   tags = {
-    Environment = "Development"
-    Project     = "Example"
+    Environment = "dev"
   }
 }
 
